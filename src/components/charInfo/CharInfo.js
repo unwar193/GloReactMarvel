@@ -83,6 +83,16 @@ class CharInfo extends Component {
 const View = ({char}) => {
     const {name, description, thumbnail, homepage, wiki, comics} = char;
 
+    // Универсальное получение массива
+    let comicsArray = [];
+    if (comics) {
+        if (Array.isArray(comics)) {
+            comicsArray = comics;
+        } else if (comics.items && Array.isArray(comics.items)) {
+            comicsArray = comics.items;
+        }
+    }
+
     let imgStyle = {'objectFit' : 'cover'};
     if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
         imgStyle = {'objectFit' : 'contain'};
@@ -109,21 +119,23 @@ const View = ({char}) => {
             </div>
             <div className="char__comics">Comics:</div>
             <ul className="char__comics-list">
-                {comics.length > 0 ? null : 'There is no comics with this character'}
-                {
-                    comics.map((item, i) => {
-                        // eslint-disable-next-line
-                        if (i > 9) return;
-                        return (
-                            <li key={i} className="char__comics-item">
-                                {item.name}
-                            </li>
-                        )
+                {comicsArray.length > 0 ? (
+                    comicsArray.slice(0, 10).map((item, i) => {
+                        // Если элемент - строка
+                        if (typeof item === 'string') {
+                            return <li key={i} className="char__comics-item">{item}</li>;
+                        }
+                        // Если элемент - объект
+                        const comicName = item.name || item.title || item.comicName || 'Unnamed comic';
+                        return <li key={i} className="char__comics-item">{comicName}</li>;
                     })
-                }                
+                ) : (
+                    <li>There is no comics with this character</li>
+                )}
             </ul>
         </>
     )
 }
+
 
 export default CharInfo;
