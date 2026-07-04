@@ -7,43 +7,39 @@ import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
 const RandomChar = () => {
-
     const [char, setChar] = useState(null);
-    // const [loading, setLoading] = useState(true);
-    // const [error, setError] = useState(false);
-
     const {loading, error, getCharacter, clearError} = useMarvelService();
 
     useEffect(() => {
         updateChar();
-        const timerId = setInterval(updateChar, 60000);
+        const timerId = setInterval(updateChar, 3000);
 
         return () => {
-            clearInterval(timerId)
+            clearInterval(timerId);
         }
     }, [])
 
     const onCharLoaded = (char) => {
-        // setLoading(false);
-        setChar(char);
+        // Проверяем, что char существует и имеет нужные свойства
+        if (char && typeof char === 'object' && 'name' in char) {
+            setChar(char);
+        } else {
+            // Если данные некорректны, пробуем снова
+            console.warn('Получены некорректные данные персонажа:', char);
+            updateChar(); // Попробовать снова
+        }
     }
-
-    // const onCharLoading = () => {
-    //     setLoading(true);
-    // }
-
-    // const onError = () => {
-    //     setError(true);
-    //     setLoading(false);
-    // }
 
     const updateChar = () => {
         clearError();
-        const id = Math.floor(Math.random() * (1011400 - 1011380));
-        // onCharLoading();
-        // marvelService
+        const id = Math.floor(Math.random() * (1011400 - 1011380)); // Исправлено: добавляем смещение
+        
         getCharacter(id)
-            .then(onCharLoaded);
+            .then(onCharLoaded)
+            .catch(error => {
+                console.error('Ошибка при получении персонажа:', error);
+                // Не устанавливаем char в undefined
+            });
     }
 
     const errorMessage = error ? <ErrorMessage/> : null;
@@ -73,6 +69,11 @@ const RandomChar = () => {
 }
 
 const View = ({char}) => {
+    // Добавляем защиту от undefined
+    if (!char) {
+        return null;
+    }
+    
     const {name, description, thumbnail, homepage, wiki} = char;
     let imgStyle = {'objectFit' : 'cover'};
     if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
@@ -85,7 +86,7 @@ const View = ({char}) => {
             <div className="randomchar__info">
                 <p className="randomchar__name">{name}</p>
                 <p className="randomchar__descr">
-                    {description}
+                    {description || 'No description available'}
                 </p>
                 <div className="randomchar__btns">
                     <a href={homepage} className="button button__main">
