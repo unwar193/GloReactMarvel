@@ -103,7 +103,7 @@ const View = ({ char }) => {
 };
 
 CharInfo.propTypes = {
-    charId: PropTypes.string
+    charId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default CharInfo;
